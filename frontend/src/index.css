@@ -1,0 +1,176 @@
+:root {
+  --bg-dark: #090a0f;
+  --bg-panel: #12141c;
+  --bg-hover: #1e222e;
+  
+  --text-main: #f0f2f5;
+  --text-muted: #8b92a5;
+  
+  --accent-blue: #3b82f6;
+  --accent-blue-dim: rgba(59, 130, 246, 0.15);
+  
+  --status-critical: #ef4444;
+  --status-critical-dim: rgba(239, 68, 68, 0.15);
+  --status-warn: #eab308;
+  --status-warn-dim: rgba(234, 179, 8, 0.15);
+  --status-success: #10b981;
+  --status-success-dim: rgba(16, 185, 129, 0.15);
+
+  --border-subtle: #292d3b;
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Layout */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Glassmorphism Panes */
+.panel {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+}
+
+.panel:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+.layout-header {
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(9, 10, 15, 0.85);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-dot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--status-success);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--status-success);
+  animation: pulse 2.5s infinite;
+}
+
+/* Buttons */
+.btn {
+  background-color: var(--accent-blue);
+  color: white;
+  border: 1px solid transparent;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--accent-blue-dim);
+}
+
+.btn-danger {
+  background-color: transparent;
+  border-color: var(--status-critical);
+  color: var(--status-critical);
+}
+
+.btn-danger:hover {
+  background-color: var(--status-critical-dim);
+}
+
+/* Code Blocks */
+pre, code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+}
+pre {
+  padding: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Status Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-critical { background: var(--status-critical-dim); color: var(--status-critical); border: 1px solid rgba(239, 68, 68, 0.2); }
+.badge-warn { background: var(--status-warn-dim); color: var(--status-warn); border: 1px solid rgba(234, 179, 8, 0.2); }
+.badge-success { background: var(--status-success-dim); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge-neutral { background: rgba(139, 146, 165, 0.15); color: var(--text-muted); border: 1px solid rgba(139, 146, 165, 0.2); }
+
+/* Animation Utils */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}

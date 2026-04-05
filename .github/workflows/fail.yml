@@ -1,0 +1,10 @@
+name: Intentional Crash Pipeline
+on: [push]
+jobs:
+  simulate-failure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger SRE Dashboard
+        run: |
+          echo "FATAL ERROR: Memory allocation failed during Docker build."
+          exit 1
