@@ -74,16 +74,24 @@ const analyzeIncident = async (serviceName, rawLog, retryCount = 0) => {
     };
 
   } catch (error) {
-    // Auto-retry on 503 (Gemini overloaded) up to 3 times
-    if (error.status === 503 && retryCount < 3) {
-      const waitSecs = (retryCount + 1) * 3;
-      console.warn(`[AI MODULE] ⏳ Gemini overloaded (503). Retrying in ${waitSecs}s... (attempt ${retryCount + 1}/3)`);
+    const status = error.status;
+
+    // Handle rate-limiting (429) and overload (503) with automatic retries
+    if ((status === 429 || status === 503) && retryCount < 3) {
+      // Try to extract the server-suggested retry delay from the error details
+      let waitSecs = (retryCount + 1) * 20; // Default: 20s, 40s, 60s
+      try {
+        const match = JSON.stringify(error).match(/"retryDelay":"(\d+)s"/);
+        if (match) waitSecs = parseInt(match[1]) + 5; // Add 5s buffer
+      } catch (_) {}
+
+      console.warn(`[AI MODULE] ⏳ Gemini ${status} hit. Waiting ${waitSecs}s before retry... (attempt ${retryCount + 1}/3)`);
       await new Promise(resolve => setTimeout(resolve, waitSecs * 1000));
       return analyzeIncident(serviceName, rawLog, retryCount + 1);
     }
 
-    console.error(`\n[AI MODULE] 💥 FATAL CATCH BLOCK EXECUTED`);
-    console.error(`=> Error Details: ${error.message || error}`);
+    console.error(`\n[AI MODULE] 💥 FATAL: All retries exhausted or unrecoverable error.`);
+    console.error(`=> Error: ${error.message || error}`);
     
     return {
       rootCauseSummary: `AI Inference Failed: ${error.message || "Failed to reach Gemini"}`,
