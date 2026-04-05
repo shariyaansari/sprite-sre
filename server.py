@@ -1,19 +1,24 @@
+from fastapi import FastAPI, Request
+import uvicorn
 from fastmcp import FastMCP
-import subprocess
 
-mcp = FastMCP("SpriteSRE-Free")
+# 1. Initialize FastAPI (for Webhooks) and FastMCP (for the Agent)
+app = FastAPI()
+mcp = FastMCP("SpriteSRE")
 
-@mcp.tool()
-def diagnose_and_fix(error_log: str) -> str:
-    """
-    Sends the error log to Gemini 2.5 Flash and 
-    returns a suggested command to fix it.
-    """
-    # Here we will call the Gemini API using the free 'google-generativeai' library
-    return "Suggestion: Update Dockerfile line 4 to use node:20-alpine"
+@app.post("/webhook")
+async def handle_webhook(request: Request):
+    payload = await request.json()
+    
+    # Check if the build failed
+    if payload.get("action") == "completed" and payload.get("workflow_run", {}).get("conclusion") == "failure":
+        repo_name = payload["repository"]["full_name"]
+        print(f"🚨 BUILD FAILED in {repo_name}!")
+        # This is where we will eventually call your 'agent.py' logic
+        return {"status": "analyzing failure"}
+    
+    return {"status": "ignored"}
 
-@mcp.tool()
-def apply_fix(command: str) -> str:
-    """Executes the fix suggested by the AI."""
-    # Logic to run the command locally
-    return f"Executed: {command}"
+# 2. Run the server on port 8000
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
