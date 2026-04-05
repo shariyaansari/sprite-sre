@@ -1,0 +1,10 @@
+# Purposefully broken to trigger the SRE Agent
+FROM python:3.12-slm 
+
+WORKDIR /app
+COPY . .
+
+# This will fail because the base image won't found
+RUN pip install -r requirements.txt
+
+CMD ["python", "app.py"]
