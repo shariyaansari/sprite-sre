@@ -37,7 +37,11 @@ const incidentSchema = new mongoose.Schema({
       default: null
     },
     suggestedPatch: {
-      type: String, // Can hold JSON or code strings
+      type: String,
+      default: null
+    },
+    executableCommand: {
+      type: String, // The real PowerShell command to execute on disk
       default: null
     }
   },

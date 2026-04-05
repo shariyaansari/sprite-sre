@@ -1,5 +1,6 @@
 const Incident = require('../models/Incident');
 const { analyzeIncident } = require('../services/aiService');
+const { exec } = require('child_process');
 
 // @desc    Report new incident & trigger AI diagnosis
 // @route   POST /api/incidents
@@ -57,7 +58,8 @@ const triggerAutonomousDiagnosis = async (incidentId, serviceName, rawLog) => {
             aiAnalysis: {
                 rootCauseSummary: aiResult.rootCauseSummary,
                 confidenceScore: aiResult.confidenceScore,
-                suggestedPatch: aiResult.suggestedPatch
+                suggestedPatch: aiResult.suggestedPatch,
+                executableCommand: aiResult.executableCommand
             },
             supplyChainImpact: {
                 affectedShipments: aiResult.affectedShipments,
@@ -118,14 +120,31 @@ const applyPatch = async (req, res) => {
         }
 
         console.log(`\n[PIPELINE] 🚀 Initiating autonomous patch deployment for incident ${id}`);
-        // Simulate immediate deployment verification state
         await Incident.findByIdAndUpdate(id, { status: 'TESTING' });
-        
-        // Mock the asynchronous CD (Continuous Deployment) test pipeline
-        setTimeout(async () => {
-            await Incident.findByIdAndUpdate(id, { status: 'RESOLVED' });
-            console.log(`[PIPELINE] ✅ Patch verified via Sandbox Integration. Incident ${id} RESOLVED.`);
-        }, 4000);
+
+        const command = incident.aiAnalysis?.executableCommand;
+
+        if (!command) {
+            // No executable command - fall back to simulated resolution
+            console.log(`[PIPELINE] ⚠️ No executable command found. Falling back to simulated resolution.`);
+            setTimeout(async () => {
+                await Incident.findByIdAndUpdate(id, { status: 'RESOLVED' });
+                console.log(`[PIPELINE] ✅ Simulated resolution complete. Incident ${id} RESOLVED.`);
+            }, 4000);
+        } else {
+            console.log(`[PIPELINE] 🖥️ Executing AI-generated command on host filesystem:\n  > ${command}`);
+            exec(`pwsh -Command "${command}"`, async (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`[PIPELINE] ❌ Command execution FAILED:\n  stderr: ${stderr}`);
+                    await Incident.findByIdAndUpdate(id, { status: 'FAILED' });
+                    console.log(`[PIPELINE] Incident ${id} marked FAILED due to patch execution error.`);
+                } else {
+                    console.log(`[PIPELINE] ✅ Command executed successfully!\n  stdout: ${stdout}`);
+                    await Incident.findByIdAndUpdate(id, { status: 'RESOLVED' });
+                    console.log(`[PIPELINE] 🎉 Incident ${id} RESOLVED. Files patched on disk!`);
+                }
+            });
+        }
 
         res.status(200).json({ success: true, message: 'Patch application initiated. Testing pipeline running.' });
     } catch (error) {

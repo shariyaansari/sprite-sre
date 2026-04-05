@@ -16,18 +16,36 @@ const analyzeIncident = async (serviceName, rawLog) => {
       }
     });
 
+    // The project root is the parent of the backend directory
+    const PROJECT_ROOT = 'C:/Users/shari/Downloads/Sprite';
+
     const prompt = `
-    You are an expert Site Reliability Engineer (SRE).
-    Analyze the following error log from the microservice: "${serviceName}"
+    You are an expert autonomous Site Reliability Engineer (SRE) AI Agent running on Windows.
+    The project root is located at: ${PROJECT_ROOT}
+    
+    Analyze the following error log from the microservice or repository: "${serviceName}"
     
     Log Data:
+    ---
     ${rawLog}
+    ---
 
-    Return your response strictly as a minified JSON object with the following exact keys:
+    Your job is to:
+    1. Diagnose the root cause.
+    2. Generate a REAL, EXECUTABLE Windows PowerShell (pwsh) one-liner command that will ACTUALLY FIX the file on disk.
+       - The command must be a single line.
+       - Use PowerShell commands like (Get-Content ... | Where-Object ... | Set-Content ...) or (Remove-Item ...) etc.
+       - The command must target files relative to the project root: ${PROJECT_ROOT}
+       - If the log is from a GitHub Actions workflow failure with 'exit 1', the fix is to comment out or remove the 'exit 1' line from the file.
+       - If fixing a Node.js app, resolve the specific config error.
+       - ONLY output a command that modifies real files. Do NOT use 'echo' as the executable command.
+    
+    Return your response STRICTLY as a minified JSON object with these exact keys:
     {
       "rootCauseSummary": "A 1-2 sentence explanation of why this service crashed.",
       "confidenceScore": 95,
-      "suggestedPatch": "Provide a hypothetical string of code or config changes to fix this issue. E.g., docker resource limits, code patch, db pool variables.",
+      "suggestedPatch": "A human-readable description of the fix being applied.",
+      "executableCommand": "A single-line PowerShell command that literally fixes the file on disk.",
       "affectedShipments": 500,
       "delayMinutes": 45
     }
@@ -46,10 +64,12 @@ const analyzeIncident = async (serviceName, rawLog) => {
       throw parseError;
     }
     
+    console.log(`[AI MODULE] 🛠️ Executable Command: ${structuredData.executableCommand}`);
     return {
       rootCauseSummary: structuredData.rootCauseSummary || "Unknown LLM Output",
       confidenceScore: structuredData.confidenceScore || 50,
       suggestedPatch: structuredData.suggestedPatch || "// Manual intervention required",
+      executableCommand: structuredData.executableCommand || null,
       affectedShipments: structuredData.affectedShipments || 0,
       delayMinutes: structuredData.delayMinutes || 0,
       financialLossEstimate: (structuredData.affectedShipments || 0) * 15 // Business impact projection
