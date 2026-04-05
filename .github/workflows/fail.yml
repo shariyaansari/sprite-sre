@@ -1,4 +1,4 @@
-name: Intentional Crash Pipeline
+name: Intentional Crash Pipeline test
 on: [push]
 jobs:
   simulate-failure:
