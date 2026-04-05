@@ -3,13 +3,11 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // Initialize the Official Deepmind/Google Native SDK
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const analyzeIncident = async (serviceName, rawLog) => {
+const analyzeIncident = async (serviceName, rawLog, retryCount = 0) => {
   try {
-    console.log(`\n[AI MODULE] 🤖 Starting Diagnosis for: ${serviceName}`);
-    // We use gemini-flash-latest because it is blazingly fast and has a huge free tier.
-    // By forcing "application/json", Gemini guarantees strict JSON parsing with no markdown ticks.
+    console.log(`\n[AI MODULE] 🤖 Starting Diagnosis for: ${serviceName}${retryCount > 0 ? ` (Retry #${retryCount})` : ''}`);
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-flash-latest",
+      model: "gemini-2.0-flash",
       generationConfig: {
         responseMimeType: "application/json",
         temperature: 0.2
@@ -76,14 +74,22 @@ const analyzeIncident = async (serviceName, rawLog) => {
     };
 
   } catch (error) {
+    // Auto-retry on 503 (Gemini overloaded) up to 3 times
+    if (error.status === 503 && retryCount < 3) {
+      const waitSecs = (retryCount + 1) * 3;
+      console.warn(`[AI MODULE] ⏳ Gemini overloaded (503). Retrying in ${waitSecs}s... (attempt ${retryCount + 1}/3)`);
+      await new Promise(resolve => setTimeout(resolve, waitSecs * 1000));
+      return analyzeIncident(serviceName, rawLog, retryCount + 1);
+    }
+
     console.error(`\n[AI MODULE] 💥 FATAL CATCH BLOCK EXECUTED`);
     console.error(`=> Error Details: ${error.message || error}`);
-    console.error(`=> Stack Trace: \n`, error);
     
     return {
       rootCauseSummary: `AI Inference Failed: ${error.message || "Failed to reach Gemini"}`,
       confidenceScore: 0,
       suggestedPatch: null,
+      executableCommand: null,
       affectedShipments: 0,
       delayMinutes: 0,
       financialLossEstimate: 0

@@ -6,6 +6,5 @@ jobs:
     steps:
       - name: Trigger SRE Dashboard
         run: |
-        
           echo "FATAL ERROR: Memory allocation failed during Docker build."
           exit 1
