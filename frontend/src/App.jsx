@@ -86,7 +86,7 @@ function App() {
         <div style={{ marginBottom: '32px' }}>
           <h1>Active Incidents</h1>
           <p className="text-muted" style={{ marginTop: '8px' }}>
-            Autonomous agent is monitoring 12 production clusters.
+            {/* Autonomous agent is monitoring production clusters. */}
           </p>
         </div>
 
