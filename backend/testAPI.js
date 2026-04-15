@@ -11,7 +11,7 @@ fetch('http://localhost:5000/api/incidents', {
   console.log('--- POST Response (Immediate 201 Created) ---');
   console.log(data);
   
-  console.log('\nWaiting 2 seconds for AI Background Job to complete...\n');
+  console.log('\nWaiting 2 seconds for AI Background Job to complete then work\n');
   
   setTimeout(() => {
     fetch('http://localhost:5000/api/incidents')
