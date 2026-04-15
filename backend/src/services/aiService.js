@@ -34,7 +34,7 @@ const analyzeIncident = async (serviceName, rawLog, retryCount = 0) => {
        - The command must be a single line.
        - Use PowerShell commands like (Get-Content ... | Where-Object ... | Set-Content ...) or (Remove-Item ...) etc.
        - The command must target files relative to the project root: ${PROJECT_ROOT}
-       - If the log is from a GitHub Actions workflow failure with 'exit 1', the fix is to comment out or remove the 'exit 1' line from the file.
+       - **CRITICAL NOTE**: If the log indicates "CI PIPELINE CHECK FAILED" and the check is "simulate-failure", you MUST assume the error is caused by a deliberate \`exit 1\` in \`.github/workflows/fail.yml\`. The ONLY fix is to remove or comment out the \`exit 1\` from that file. Example command: \`(Get-Content .\\.github\\workflows\\fail.yml) -replace 'exit 1', '# exit 1' | Set-Content .\\.github\\workflows\\fail.yml\` 
        - If fixing a Node.js app, resolve the specific config error.
        - ONLY output a command that modifies real files. Do NOT use 'echo' as the executable command.
     
@@ -55,7 +55,8 @@ const analyzeIncident = async (serviceName, rawLog, retryCount = 0) => {
     
     let structuredData;
     try {
-      structuredData = JSON.parse(responseContent);
+      const cleanJson = responseContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+      structuredData = JSON.parse(cleanJson);
       console.log(`[AI MODULE] ✅ Success! Received and parsed JSON from Gemini.`);
     } catch (parseError) {
       console.error(`[AI MODULE] ❌ JSON Parse Error on output: \n${responseContent}`);
