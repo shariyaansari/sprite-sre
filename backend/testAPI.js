@@ -2,7 +2,7 @@ fetch('http://localhost:5000/api/incidents', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    serviceName: 'inventory-api',
+    serviceName: 'inventory',
     rawLog: 'FATAL ERROR: Connection pool timeout. Could not connect to database.'
   })
 })
