@@ -18,11 +18,10 @@ SpriteSRE validates, applies, and generates the diff.
 
 from abc import ABC, abstractmethod
 
-from backend.patching.file import File
+from backend.schemas.file import File
 from backend.schemas.diagnosis import Diagnosis
 from backend.schemas.patch import PatchEdit
 
- 
 class PatchGenerator(ABC):
     """
     Abstract base class for patch generation.
@@ -38,7 +37,7 @@ class PatchGenerator(ABC):
         files: list[File],
     ) -> PatchEdit:
         """
-        Generate a patch edit to fix a diagnosed failure.
+        Generate a patch edit to fix a diagnosed failure.   
         
         Args:
             diagnosis: The structured diagnosis of the failure
